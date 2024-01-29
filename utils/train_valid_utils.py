@@ -33,7 +33,7 @@ def train_epoch(model, trainloader, optimizer, criterion, device, n_classes):
     for i in range(n_classes):
             iou[i]/=counter
             dice[i]/=counter
-    return miou/counter, mdice/counter, iou, dice, acc
+    return loss, miou/counter, mdice/counter, iou, dice, acc
 
 def valid_epoch(model, trainloader, criterion, device, n_classes):
     model.eval()
@@ -63,4 +63,4 @@ def valid_epoch(model, trainloader, criterion, device, n_classes):
         for i in range(n_classes):
                 iou[i]/=counter
                 dice[i]/=counter
-    return miou/counter, mdice/counter, iou, dice, acc
+    return loss, miou/counter, mdice/counter, iou, dice, acc
