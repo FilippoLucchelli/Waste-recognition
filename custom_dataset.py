@@ -10,13 +10,13 @@ from torchvision.transforms import transforms
 
 class CustomDataset(Dataset):
 
-    def __init__(self, data_dir, k_fold=True, fold_list=None, bands=[]):
+    def __init__(self, opt, fold_list=None):
         
         rgb_names=['red', 'green', 'blue']
-        band_names=rgb_names+bands+['masks']
+        band_names=rgb_names+opt.channels+['masks']
 
-        if k_fold:
-            folds=utils.list_and_sort_paths(data_dir)
+        if opt.k_fold:
+            folds=utils.list_and_sort_paths(opt.data_dir)
             band_paths={}
             for n_fold, fold in enumerate(folds):
                 if n_fold in fold_list:
@@ -26,7 +26,7 @@ class CustomDataset(Dataset):
                         band_paths[band_name].extend(utils.list_and_sort_paths(os.path.join(fold, band_name)))
             self.band_paths=band_paths
             self.band_names=band_names
-            self.bands=bands
+            self.bands=opt.channels
     
     def __len__(self):
         return len(self.band_paths[self.band_names[0]])
@@ -44,4 +44,4 @@ class CustomDataset(Dataset):
         img=data_torch[:-1]
         mask=data_torch[-1]
 
-        return img, mask
+        return img, mask.long()
