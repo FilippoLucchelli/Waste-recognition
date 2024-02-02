@@ -1,66 +1,63 @@
 import torch
 import numpy as np
 from utils.metrics import Metrics
+import utils.utils as utils
+import time
 
-def train_epoch(model, trainloader, optimizer, criterion, device, n_classes):
+def train_epoch(model, trainloader, optimizer, criterion, device, opt):
 
     model.train()
     
     counter=0
-    acc=0
-    miou=0
-    mdice=0
-    iou={i:0 for i in range(n_classes)}
-    dice={i:0 for i in range(n_classes)}
+
+    metrics={metric_name:0 for metric_name in utils.metric_names(opt)}  
+    tot_loss=0  
     
     for img, mask in trainloader:
         img, mask= img.to(device), mask.to(device)
+        optimizer.zero_grad()
         output=model(img)
         loss=criterion(output, mask)
         loss.backward()
         optimizer.step()
 
-        metrics=Metrics(output, mask, n_classes).to(device)
-        _miou, _mdice, _iou, _dice, _acc=metrics.get_metrics()
-        miou+=_miou
-        mdice+=_mdice
-        acc+=_acc
-        for i in range(n_classes):
-            iou[i]+=_iou[i]
-            dice[i]+=_dice[i]
+        tot_loss+=loss
 
+        mt=Metrics(output, mask)
+        _metrics=mt.get_metrics(opt)
+        for metric_name in _metrics:
+            metrics[metric_name]+=_metrics[metric_name]                          
+        
         counter+=1
-    for i in range(n_classes):
-            iou[i]/=counter
-            dice[i]/=counter
-    return loss, miou/counter, mdice/counter, iou, dice, acc
+    for metric_name in metrics:
+         metrics[metric_name]/=counter
 
-def valid_epoch(model, trainloader, criterion, device, n_classes):
+    return metrics, tot_loss/counter
+
+    
+
+def valid_epoch(model, validloader, criterion, device, opt):
     model.eval()
 
-    counter=0
-    acc=0
-    miou=0
-    mdice=0
-    iou={i:0 for i in range(n_classes)}
-    dice={i:0 for i in range(n_classes)}
+    
     
     with torch.no_grad():
-        for img, mask in trainloader:
+        metrics={metric_name:0 for metric_name in utils.metric_names(opt)}   
+        tot_loss=0
+        counter=0
+
+        for img, mask in validloader:
             img, mask = img.to(device), mask.to(device)
             output=model(img)
-            loss=criterion(img, mask)
-            metrics=Metrics(output, mask, n_classes).to(device)
-            _miou, _mdice, _iou, _dice, _acc=metrics.get_metrics()
-            miou+=_miou
-            mdice+=_mdice
-            acc+=_acc
-            for i in range(n_classes):
-                iou[i]+=_iou[i]
-                dice[i]+=_dice[i]
-
+            loss=criterion(output, mask)
+            
+            mt=Metrics(output, mask)
+            _metrics=mt.get_metrics(opt)
+            for metric_name in _metrics:
+                metrics[metric_name]+=_metrics[metric_name]                          
+            
             counter+=1
-        for i in range(n_classes):
-                iou[i]/=counter
-                dice[i]/=counter
-    return loss, miou/counter, mdice/counter, iou, dice, acc
+        for metric_name in metrics:
+            metrics[metric_name]/=counter
+
+    return metrics, tot_loss/counter 
