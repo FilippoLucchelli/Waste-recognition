@@ -1,15 +1,16 @@
 import torch
+import utils.utils as utils
 
 
 class Metrics:
 
-    def __init__(self, pred, target, n_classes):
+    def __init__(self, pred, target):
+        _pred=pred.clone()
         if len(pred.shape)!=len(target.shape):
-            pred=torch.argmax(pred, dim=1)
+            _pred=torch.argmax(_pred, dim=1)
         
-        self.pred=pred
+        self.pred=_pred
         self.target=target
-        self.n_classes=n_classes
 
     def IoU(self, n_class):
 
@@ -18,7 +19,7 @@ class Metrics:
         target_binary=self.target==n_class
 
         if torch.sum(pred_binary)==0 and torch.sum(target_binary)==0:
-            return None
+            return 0
 
         else:
             intersection=torch.logical_and(pred_binary, target_binary)
@@ -31,7 +32,7 @@ class Metrics:
         target_binary=self.target==n_class
 
         if torch.sum(pred_binary)==0 and torch.sum(target_binary)==0:
-            return None
+            return 0
         
         else:
             intersection=torch.logical_and(pred_binary, target_binary)
@@ -43,18 +44,29 @@ class Metrics:
         tot_pixels=self.target.size(0)*self.target.size(1)
         return sum_correct/tot_pixels
     
-    def get_metrics(self):
-        iou, dice={i:None for i in range(self.n_classes)}, {i:None for i in range(self.n_classes)}
+    def get_metrics(self, opt):
+        class_values=utils.default_classes(opt)
+        metrics={}
         miou=0
         mdice=0
-        for n_class in range(self.n_classes):
-            iou[n_class]=self.IoU(n_class)
-            dice[n_class]=self.dice(n_class)
-            miou+=iou[n_class]
-            mdice+=dice[n_class]
+        
+        if 'accuracy' in opt.metrics:
+            metrics['accuracy']=self.accuracy()
 
-        miou/=self.n_classes
-        mdice/=self.n_classes        
-        acc=self.accuracy()
-        return miou, mdice, iou, dice, acc
+        for class_name in class_values:
+            if 'iou' in opt.metrics:
+                metrics[f'{class_name}_iou']=self.IoU(class_values[class_name])
+                miou+=metrics[f'{class_name}_iou']
+
+            if 'dice' in opt.metrics:
+                metrics[f'{class_name}_dice']=self.dice(class_values[class_name])
+                mdice+=metrics[f'{class_name}_dice']
+
+        if 'iou' in opt.metrics:
+            metrics['miou']=miou/opt.n_classes
+        
+        if 'dice' in opt.metrics:
+            metrics['mdice']=mdice/opt.n_classes
+
+        return metrics
 
