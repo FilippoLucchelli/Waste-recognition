@@ -10,7 +10,7 @@ from torchvision.transforms import transforms
 
 class CustomDataset(Dataset):
 
-    def __init__(self, opt, fold_list=None):
+    def __init__(self, opt, fold_list=None, transforms=None):
         
         rgb_names=['red', 'green', 'blue']
         band_names=rgb_names+opt.channels+['masks']
@@ -28,6 +28,7 @@ class CustomDataset(Dataset):
             self.band_names=band_names
             self.bands=opt.channels
             self.opt=opt
+            self.transforms=transforms
     
     def __len__(self):
         return len(self.band_paths[self.band_names[0]])
@@ -41,6 +42,9 @@ class CustomDataset(Dataset):
         
         data_np=np.stack(data)
         data_torch=torch.from_numpy(data_np)
+
+        if self.transforms is not None:
+            data_torch=self.transforms(data_torch)
         
         img=data_torch[:-1]
         mask=data_torch[-1]

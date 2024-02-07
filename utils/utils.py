@@ -182,5 +182,7 @@ def get_colormap(opt):
 
 def get_folds(opt):
     n_folds=len(os.listdir(opt.data_dir))
+    print(opt.valid_folds)
+    print(opt.test_folds)
     train_folds=list(range(0,n_folds))
     opt.train_folds=[i for i in train_folds if i not in opt.valid_folds and i not in opt.test_folds]

@@ -13,7 +13,7 @@ if __name__=='__main__':
     opt=TrainOptions().parse()
     device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     
-
+    utils.get_folds(opt)
 
     train_set=CustomDataset(opt, opt.train_folds)
     opt.mean, opt.std=train_set.get_mean_std()

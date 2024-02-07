@@ -65,9 +65,14 @@ def valid_epoch(model, validloader, criterion, device, opt):
 
 
 def get_transforms(opt):
-    tr=transforms.Compose([transforms.Resize((opt.size, opt.size)),
-                           transforms.RandomHorizontalFlip(),
-                           transforms.RandomVerticalFlip()])
+    tr=[transforms.Resize(opt.size)]
+    if 'v_flip' in opt.transforms:
+        tr.append(transforms.RandomVerticalFlip(opt.probability))
+    if 'h_flip' in opt.transforms:
+        tr.append(transforms.RandomHorizontalFlip(opt.probability))
+    if 'crop' in opt.transforms:
+        tr.append(transforms.RandomResizedCrop(size=opt.size, scale=(opt.scale, 1.0)))
     
-    return tr
+    transform=transforms.Compose(tr)
+    return transform
     

@@ -11,9 +11,9 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--channels', nargs='*', default=[], help='additional channels on top of rgb')
         parser.add_argument('--loss', default='jaccard', choices=['jaccard', 'crossentropy'])
         parser.add_argument('--valid_folds', type=int, nargs='+', help='folds to use for validation')
-        parser.add_argument('--test_folds', type=int, nargs='*', help='folds to use for testing')
+        parser.add_argument('--test_folds', type=int, nargs='*', default=[],help='folds to use for testing')
 
-        parser.add_argument('--lr', type=float, help='initial learning rate')
+        parser.add_argument('--lr', default=0.001, type=float, help='initial learning rate')
         parser.add_argument('--scheduler', default='cosine', choices=['none', 'step', 'plateau', 'triangular'])
         parser.add_argument('--T_0', type=int, default=100, help='T_0 parameter for cosine scheduler')
         parser.add_argument('--eta_min', type=float, default=0.00001, help='minimum learning rate for cosine scheduler')
@@ -30,6 +30,9 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--momentum', default=0.8, type=float)
         parser.add_argument('--epochs', type=int, default=700, help='number of epochs for training')
         parser.add_argument('--batch_size', type=int, default=4, help='batch size for training and validation')
+        parser.add_argument('--transforms', nargs='*', default=['h_flip', 'crop'], help='transforms for training: [v_flip, h_flip, crop]')
+        parser.add_argument('--probability', type=float, default=0.5, help='probablity of flips')
+        parser.add_argument('--crop_scale', type=float, default=0.5, help='min scale parameter in crop')
 
         self.isTrain=True
 
