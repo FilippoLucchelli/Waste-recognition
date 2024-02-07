@@ -9,6 +9,7 @@ import time
 def test(opt, model, test_loader, device):
     model.eval()
     vis=visdom.Visdom()
+    vis.close()
     cmap=utils.get_colormap(opt)
 
     counter=0
@@ -18,11 +19,14 @@ def test(opt, model, test_loader, device):
             img,mask=img.to(device), mask.to(device)
             out=model(img)
 
-            out_mask=cmap(torch.argmax(out, dim=1).squeeze().cpu().numpy()).transpose((2,0,1))
-            _mask=cmap(mask.squeeze().cpu().numpy()).transpose((2,0,1))
-            filler=np.zeros((4, 640, 10))
-            img_print=np.concatenate([_mask, filler, out_mask], axis=2)
-            vis.image(img_print, win='image', opts=dict(store_history=True))        
+            out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
+            _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
+            filler=np.zeros((_mask.shape[0], _mask.shape[1], _mask.shape[2], 10))
+            
+            imgs_print=np.concatenate([_mask, filler, out_mask], axis=3)
+
+            for img_print in imgs_print:
+                vis.image(img_print, win='image', opts=dict(store_history=True))       
 
             
             mt=Metrics(out, mask)
@@ -34,6 +38,7 @@ def test(opt, model, test_loader, device):
             counter+=1
         for metric_name in metrics:
             metrics[metric_name]/=counter
+        print_metrics(vis, metrics)
 
     return metrics
 
@@ -47,4 +52,14 @@ def get_test_options(opt):
     opt.n_classes=ast.literal_eval(data['n_classes'])
     opt.mean=ast.literal_eval(data['mean'])
     opt.std=ast.literal_eval(data['std'])
+    if opt.test_folds==None:
+        opt.test_folds=ast.literal_eval(data['test_folds'])
     opt.pretrained=True
+
+def print_metrics(vis, metrics):
+    txt='Metrics: <br>'
+    for metric_name in metrics:
+        metric_val=np.round((metrics[metric_name].cpu().numpy())*100, decimals=2)        
+        txt+=f'{metric_name}: {metric_val} <br>'
+    
+    vis.text(txt, win='metrics')

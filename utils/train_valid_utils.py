@@ -1,4 +1,5 @@
 import torch
+from torchvision import transforms
 import numpy as np
 from utils.metrics import Metrics
 import utils.utils as utils
@@ -61,3 +62,12 @@ def valid_epoch(model, validloader, criterion, device, opt):
             metrics[metric_name]/=counter
 
     return metrics, tot_loss/counter 
+
+
+def get_transforms(opt):
+    tr=transforms.Compose([transforms.Resize((opt.size, opt.size)),
+                           transforms.RandomHorizontalFlip(),
+                           transforms.RandomVerticalFlip()])
+    
+    return tr
+    
