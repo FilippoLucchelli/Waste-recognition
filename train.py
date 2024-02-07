@@ -6,15 +6,21 @@ from custom_dataset import CustomDataset
 from utils import utils
 from utils.train_valid_utils import train_epoch, valid_epoch
 import utils.visdom_utils as visdom_utils
+import time
 
 
 if __name__=='__main__':
     opt=TrainOptions().parse()
     device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
-    train_folds, valid_folds=list(range(0,9)), list(range(9,10)) #todo: need to change this way
+    
 
-    train_set=CustomDataset(opt, train_folds)
-    valid_set=CustomDataset(opt, valid_folds)
+
+    train_set=CustomDataset(opt, opt.train_folds)
+    opt.mean, opt.std=train_set.get_mean_std()
+    valid_set=CustomDataset(opt, opt.valid_folds)
+
+    opt.parameters_file, opt.metric_file=utils.init_files(opt)
+
     train_loader=DataLoader(train_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
     valid_loader=DataLoader(valid_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
 
@@ -30,17 +36,19 @@ if __name__=='__main__':
     for epoch in range(opt.epochs):
 
         train_metrics, train_loss=train_epoch(model=model, criterion=criterion,
-                                    trainloader=train_loader,
-                                    optimizer=optimizer, device=device,
-                                    opt=opt)
+                                              trainloader=train_loader,
+                                              optimizer=optimizer, device=device,
+                                              opt=opt)
         
         valid_metrics, valid_loss=valid_epoch(model=model, validloader=valid_loader,
-                                                criterion=criterion, device=device, opt=opt)
+                                              criterion=criterion, device=device, opt=opt)
 
         for metric_name in utils.metric_names(opt):
             plotters[metric_name].update_plot(epoch, [valid_metrics[metric_name].cpu(), train_metrics[metric_name].cpu()])
         
+        utils.save_metrics(opt, valid_metrics.values())
 
         if scheduler is not None:
             scheduler.step()
-
+            
+    utils.save_model(opt, model)
