@@ -10,6 +10,8 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--save_folder', help='folder where to save models, plots, etc...')
         parser.add_argument('--channels', nargs='*', default=[], help='additional channels on top of rgb')
         parser.add_argument('--loss', default='jaccard', choices=['jaccard', 'crossentropy'])
+        parser.add_argument('--valid_folds', type=int, nargs='+', help='folds to use for validation')
+        parser.add_argument('--test_folds', type=int, nargs='*', help='folds to use for testing')
 
         parser.add_argument('--lr', type=float, help='initial learning rate')
         parser.add_argument('--scheduler', default='cosine', choices=['none', 'step', 'plateau', 'triangular'])
