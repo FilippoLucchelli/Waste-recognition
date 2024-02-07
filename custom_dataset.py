@@ -27,6 +27,7 @@ class CustomDataset(Dataset):
             self.band_paths=band_paths
             self.band_names=band_names
             self.bands=opt.channels
+            self.opt=opt
     
     def __len__(self):
         return len(self.band_paths[self.band_names[0]])
@@ -43,5 +44,27 @@ class CustomDataset(Dataset):
         
         img=data_torch[:-1]
         mask=data_torch[-1]
+        if self.opt.mean is not None:
+            norm=transforms.Normalize(self.opt.mean, self.opt.std)
+            img=norm(img)
+            
 
         return img, mask.long()
+    
+    def get_mean_std(self):
+        mean={band_name: 0.0 for band_name in self.band_names if band_name!='masks'}
+        std={band_name: 0.0 for band_name in self.band_names if band_name != 'masks'}
+        counter=0
+        for band_name in self.band_names:
+            if band_name!='masks':
+                for band_path in self.band_paths[band_name]:
+                    band=np.load(band_path)
+                    mean[band_name]+=np.mean(band)
+                    std[band_name]+=np.std(band)
+                    counter+=1
+                mean[band_name]/=counter
+                std[band_name]/=counter
+                counter=0
+
+        return list(mean.values()), list(std.values())
+
