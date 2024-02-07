@@ -17,15 +17,14 @@ def test(opt, model, test_loader, device):
         for img, mask in test_loader:        
             img,mask=img.to(device), mask.to(device)
             out=model(img)
+
             out_mask=cmap(torch.argmax(out, dim=1).squeeze().cpu().numpy()).transpose((2,0,1))
             _mask=cmap(mask.squeeze().cpu().numpy()).transpose((2,0,1))
-            img_print=np.concatenate([_mask, out_mask], axis=2)
-            print(img_print.shape)
-            vis.image(img_print, win='image', opts=dict(store_history=True))
-            time.sleep(10)
+            filler=np.zeros((4, 640, 10))
+            img_print=np.concatenate([_mask, filler, out_mask], axis=2)
+            vis.image(img_print, win='image', opts=dict(store_history=True))        
 
-            #vis.image(img_print, win='imgs', opts=dict(store_history=True, width=1280, height=640))
-
+            
             mt=Metrics(out, mask)
             _metrics=mt.get_metrics(opt)
             for metric_name in _metrics:
