@@ -11,7 +11,7 @@ def train_epoch(model, trainloader, optimizer, criterion, device, opt):
     
     counter=0
 
-    metrics={metric_name:0 for metric_name in utils.metric_names(opt)}  
+    metrics={metric_name:0 for metric_name in utils.metric_names(opt)}  #initialize metric dictionary
     tot_loss=0  
     
     for img, mask in trainloader:
@@ -25,22 +25,20 @@ def train_epoch(model, trainloader, optimizer, criterion, device, opt):
         tot_loss+=loss
 
         mt=Metrics(output, mask)
-        _metrics=mt.get_metrics(opt)
+        _metrics=mt.get_metrics(opt) #compute metrics for the batch
         for metric_name in _metrics:
-            metrics[metric_name]+=_metrics[metric_name]                          
+            metrics[metric_name]+=_metrics[metric_name] #accumulate metrics                    
         
         counter+=1
     for metric_name in metrics:
-         metrics[metric_name]/=counter
+         metrics[metric_name]/=counter #average metrics
 
     return metrics, tot_loss/counter
 
     
 
 def valid_epoch(model, validloader, criterion, device, opt):
-    model.eval()
-
-    
+    model.eval()    
     
     with torch.no_grad():
         metrics={metric_name:0 for metric_name in utils.metric_names(opt)}   
@@ -65,6 +63,7 @@ def valid_epoch(model, validloader, criterion, device, opt):
 
 
 def get_transforms(opt):
+    """ Function to get the chosen transforms """
     tr=[transforms.Resize(opt.size)]
     if 'v_flip' in opt.transforms:
         tr.append(transforms.RandomVerticalFlip(opt.probability))

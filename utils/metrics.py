@@ -3,6 +3,7 @@ import utils.utils as utils
 
 
 class Metrics:
+    """ Class to compute different metrics between prediction and ground truth """
 
     def __init__(self, pred, target):
         _pred=pred.clone()
@@ -13,12 +14,12 @@ class Metrics:
         self.target=target
 
     def IoU(self, n_class):
-
+        """ Compute intersection over union """
         
         pred_binary=self.pred==n_class
         target_binary=self.target==n_class
 
-        if torch.sum(pred_binary)==0 and torch.sum(target_binary)==0:
+        if torch.sum(pred_binary)==0 and torch.sum(target_binary)==0: #Avoid division by 0
             return 0
 
         else:
@@ -27,6 +28,7 @@ class Metrics:
             return torch.sum(intersection)/torch.sum(union)
 
     def dice(self, n_class):
+        """ Compute dice coefficient """
 
         pred_binary=self.pred==n_class
         target_binary=self.target==n_class
@@ -40,11 +42,15 @@ class Metrics:
             return (torch.sum(intersection)/torch.sum(summ))*2
         
     def accuracy(self):
+        """ Compute accuracy """
+
         sum_correct=torch.sum(self.pred==self.target)
         tot_pixels=self.target.size(0)*self.target.size(1)
         return sum_correct/tot_pixels
     
     def get_metrics(self, opt):
+        """ Get all the specified metrics as a dictionary """
+
         class_values=utils.default_classes(opt)
         metrics={}
         miou=0

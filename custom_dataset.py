@@ -9,6 +9,7 @@ from torchvision.transforms import transforms
 
 
 class CustomDataset(Dataset):
+    """ Class to load dataset. """
 
     def __init__(self, opt, fold_list=None, transforms=None):
         

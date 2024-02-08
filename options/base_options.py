@@ -5,6 +5,8 @@ from utils.test_utils import get_test_options
 
 
 class BaseOptions():
+    """ This class defines options used during both training and test time. """
+    
     def __init__(self):
         self.initialized=False
 
@@ -17,7 +19,6 @@ class BaseOptions():
         parser.add_argument('--model', default='msnet', choices=['msnet', 'acnet', 'unet', 'unet++', 'deeplabv3', 'deeplabv3+'])
         parser.add_argument('--size', type=int, default=640, help='size of resized data in custom dataset class')
         parser.add_argument('--n_classes', type=int, default=6, help='number of classes for segmentation')
-        parser.add_argument('--compute_mean_std', action='store_true', help='if true, compute mean std on the dataset. Else, takes mean and std from mean.csv')
 
         parser.add_argument('--classes', nargs='+', help='name of classes')
         parser.add_argument('--metrics', nargs='+', default=['iou'], help='evaluation metrics')

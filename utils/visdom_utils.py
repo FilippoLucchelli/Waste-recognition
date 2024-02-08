@@ -4,6 +4,7 @@ import torch
 
 
 class VisUtils:
+    """ Class to initialize and plot line plots on visdom """
     def __init__(self, metric_name):
         self.metric_name=metric_name
         self.vis=visdom.Visdom()

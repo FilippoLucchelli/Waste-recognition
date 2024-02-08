@@ -10,13 +10,14 @@ import time
 
 
 if __name__=='__main__':
-    opt=TrainOptions().parse()
+    opt=TrainOptions().parse() #parse options
     device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     
-    utils.get_folds(opt)
+    utils.get_folds(opt) #get folds for training
 
     train_set=CustomDataset(opt, opt.train_folds)
     opt.mean, opt.std=train_set.get_mean_std()
+    train_set=CustomDataset(opt, opt.train_folds)
     valid_set=CustomDataset(opt, opt.valid_folds)
 
     opt.parameters_file, opt.metric_file=utils.init_files(opt)

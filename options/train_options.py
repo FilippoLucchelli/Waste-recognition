@@ -1,8 +1,9 @@
 from .base_options import BaseOptions
 
 class TrainOptions(BaseOptions):
+    """ Class that includes options for training """
 
-    def initialize(self, parser):
+    def initialize(self, parser):        
 
         parser=BaseOptions.initialize(self, parser)
 

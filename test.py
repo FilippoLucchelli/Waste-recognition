@@ -9,7 +9,7 @@ import time
 
 
 if __name__=='__main__':
-    opt=TestOptions().parse()
+    opt=TestOptions().parse() #parsing options
         
     device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

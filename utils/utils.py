@@ -13,20 +13,20 @@ from matplotlib.colors import ListedColormap
 
 
 def list_and_sort_paths(folder):
+    """ Input folder name, output sorted list of folders/paths inside it. """
     names_list=sorted(os.listdir(folder))
     paths_list=[os.path.join(folder, names_list[i]) for i in range(len(names_list))]
     return paths_list
 
 def load_model(opt):
+    """ Function to load the specified model. """
+
     model_name=opt.model
     
-    n_classes=opt.n_classes
-
-    
-    ###### add pretrained options 
+    n_classes=opt.n_classes    
+    ###### add pretrained options
         
     n_channels=len(opt.channels)+3
-
 
     if model_name == 'unet':
         model=smp.Unet(encoder_name='resnet34',
@@ -68,6 +68,8 @@ def load_model(opt):
     return model
 
 def load_scheduler(opt, optimizer):
+    """ Function to load the chosen learning rate scheduler. """
+
     sched_name=opt.scheduler
 
     if sched_name=='cosine':
@@ -83,6 +85,8 @@ def load_scheduler(opt, optimizer):
     return scheduler
 
 def load_optimizer(opt, model):
+    """ Function to load the chosen optimizer (adam or sgd) """
+
     if opt.optimizer=='sgd':
         optimizer=optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=opt.lr,
                             momentum=opt.momentum, weight_decay=opt.weight_decay, nesterov=True)
@@ -93,6 +97,8 @@ def load_optimizer(opt, model):
     return optimizer
 
 def load_loss(opt):
+    """ Function to load the loss function. """
+
     if opt.loss=='crossentropy':
         loss=nn.CrossEntropyLoss()
     elif opt.loss=='jaccard':
@@ -102,6 +108,10 @@ def load_loss(opt):
     return loss
 
 def default_classes(opt):
+    """ Function that returns default classes for the waste dataset.
+        Returns a dictionary with classes and their segmentation value
+    """
+
     if opt.n_classes==6:
         classes={'grass':0, 'obstacle':1, 'road':2, 'trash':3, 'vegetation':4, 'sky':5}
     elif opt.n_classes==5:
@@ -109,6 +119,10 @@ def default_classes(opt):
     return classes
 
 def metric_names(opt):
+    """ Function to get the name of each calculated metric. 
+        Example: miou, iou_class1...
+    """
+
     class_names=opt.classes
     metrics=[]
     if 'iou' in opt.metrics:
@@ -123,6 +137,8 @@ def metric_names(opt):
     return metrics
 
 def init_files(opt):
+    """ Function to initialize a file with the parameters used to train (parameters.csv) and a file where the metrics are going to be saved on (metrics.csv)"""
+
     parameters_file=os.path.join(opt.save_folder, 'parameters.csv')
     parameters={'channels':opt.channels, 
                 'model':opt.model,
@@ -148,6 +164,8 @@ def init_files(opt):
     return parameters_file, metric_file
 
 def save_metrics(opt, metrics):
+    """ Function to save the metrics on metrics.csv for each epoch """
+
     with open(opt.metric_file, mode='a') as file:
         for metric in metrics:
             _metric=round(metric.item()*100, 2)
@@ -155,10 +173,14 @@ def save_metrics(opt, metrics):
         file.write('\n')
 
 def save_model(opt, model):
+    """ Function to save the parameters of the last model (model.pth) """
+
     save_path=os.path.join(opt.save_folder, 'model.pth')
     torch.save(model.state_dict(), save_path)
 
 def read_csv(opt):
+    """ Function to read csv files into dictionaries """
+
     csv_path=os.path.join(opt.model_dir, 'parameters.csv')
     with open(csv_path, 'r') as file:
         reader=csv.DictReader(file)
@@ -169,9 +191,6 @@ def read_csv(opt):
 def get_colormap(opt):
     """ Create a colormap to print the masks.
 
-    args:
-        n_classes (int): number of classes for the model
-
     """
     colors=['#00ff00', '#0033cc', '#a6a6a6', '#ffff00', '#18761c', '#18ffff']
     values=np.arange(opt.n_classes)
@@ -181,6 +200,8 @@ def get_colormap(opt):
     return cmap
 
 def get_folds(opt):
+    """ Function to get a list for the training folds"""
+
     n_folds=len(os.listdir(opt.data_dir))
     print(opt.valid_folds)
     print(opt.test_folds)
