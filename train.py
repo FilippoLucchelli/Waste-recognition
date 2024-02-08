@@ -7,6 +7,7 @@ from utils import utils
 from utils.train_valid_utils import train_epoch, valid_epoch
 import utils.visdom_utils as visdom_utils
 import time
+from visdom import Visdom
 
 
 if __name__=='__main__':
@@ -15,12 +16,12 @@ if __name__=='__main__':
     
     utils.get_folds(opt) #get folds for training
 
-    train_set=CustomDataset(opt, opt.train_folds)
-    opt.mean, opt.std=train_set.get_mean_std()
-    train_set=CustomDataset(opt, opt.train_folds)
-    valid_set=CustomDataset(opt, opt.valid_folds)
+    train_set=CustomDataset(opt, opt.train_folds) #set for mean std
+    opt.mean, opt.std=train_set.get_mean_std() #compute mean std for normalization
+    train_set=CustomDataset(opt, opt.train_folds) #actual trainset
+    valid_set=CustomDataset(opt, opt.valid_folds) #validation set
 
-    opt.parameters_file, opt.metric_file=utils.init_files(opt)
+    opt.parameters_file, opt.metric_file=utils.init_files(opt) #initialize files
 
     train_loader=DataLoader(train_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
     valid_loader=DataLoader(valid_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
@@ -31,8 +32,10 @@ if __name__=='__main__':
     scheduler=utils.load_scheduler(opt, optimizer=optimizer)
     
     plotters={}
+    vis=Visdom()
+    vis.close()
     for metric_name in utils.metric_names(opt):
-        plotters[metric_name]=visdom_utils.VisUtils(metric_name)
+        plotters[metric_name]=visdom_utils.VisUtils(metric_name, vis)
 
     for epoch in range(opt.epochs):
 
