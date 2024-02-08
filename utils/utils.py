@@ -81,7 +81,10 @@ def load_scheduler(opt, optimizer):
     elif sched_name=='triangular':
         scheduler=lr_scheduler.CyclicLR(optimizer=optimizer, base_lr=opt.base_lr, max_lr=opt.max_lr,
                                         step_size_down=opt.step_size_down, step_size_up=opt.step_size_up, mode='triangular2')
-        
+    
+    elif sched_name=='none':
+        scheduler=None
+
     return scheduler
 
 def load_optimizer(opt, model):
