@@ -144,6 +144,7 @@ def init_files(opt):
 
     parameters_file=os.path.join(opt.save_folder, 'parameters.csv')
     parameters={'channels':opt.channels, 
+                'data_dir':opt.data_dir,
                 'model':opt.model,
                 'k_fold':opt.k_fold,
                 'size':opt.size,
