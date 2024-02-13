@@ -4,6 +4,7 @@ import numpy as np
 from utils.metrics import Metrics
 import utils.utils as utils
 import time
+import ast
 
 def train_epoch(model, trainloader, optimizer, criterion, device, opt):
 
@@ -75,3 +76,11 @@ def get_transforms(opt):
     transform=transforms.Compose(tr)
     return transform
     
+def get_pretrained_options(opt):
+    """ Function to load options from the trained model. """
+
+    data=utils.read_csv(opt)
+    opt.channels=ast.literal_eval(data['channels'])
+    opt.model=(data['model'])
+    opt.size=ast.literal_eval(data['size'])
+    opt.n_classes=ast.literal_eval(data['n_classes'])
