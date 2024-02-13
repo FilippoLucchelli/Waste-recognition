@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from options.train_options import TrainOptions
 from custom_dataset import CustomDataset
 from utils import utils
-from utils.train_valid_utils import train_epoch, valid_epoch
+from utils.train_valid_utils import train_epoch, valid_epoch, get_pretrained_options
 import utils.visdom_utils as visdom_utils
 import time
 from visdom import Visdom
@@ -12,6 +12,9 @@ from visdom import Visdom
 
 if __name__=='__main__':
     opt=TrainOptions().parse() #parse options
+    if opt.pretrained:
+        get_pretrained_options(opt)        
+
     device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     
     utils.get_folds(opt) #get folds for training
