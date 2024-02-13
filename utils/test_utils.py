@@ -69,7 +69,12 @@ def print_metrics(vis, metrics):
     
     txt='Metrics: <br>'
     for metric_name in metrics:
-        metric_val=np.round((metrics[metric_name].cpu().numpy())*100, decimals=2)        
+        
+        if torch.is_tensor(metrics[metric_name]):
+            metric_val=np.round((metrics[metric_name].cpu().numpy())*100, decimals=2)   
+        else:
+            metric_val=np.round((metrics[metric_name])*100, decimals=2)
+        
         txt+=f'{metric_name}: {metric_val} <br>'
     
     vis.text(txt, win='metrics')
