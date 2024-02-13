@@ -27,7 +27,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--step_size_down', type=int, help='step size down for triangular scheduler. If non specified, equal to size up')
 
         parser.add_argument('--optimizer', default='sgd', choices=['sgd', 'adam'])
-        parser.add_argument('--weight_decay', type=float, default=0, help='weight decay parameter for sgd')
+        parser.add_argument('--weight_decay', type=float, default=0.01, help='weight decay parameter for sgd')
         parser.add_argument('--momentum', default=0.8, type=float)
         parser.add_argument('--epochs', type=int, default=700, help='number of epochs for training')
         parser.add_argument('--batch_size', type=int, default=4, help='batch size for training and validation')
