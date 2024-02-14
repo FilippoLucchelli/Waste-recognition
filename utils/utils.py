@@ -165,13 +165,25 @@ def init_files(opt):
         for metric in metrics:
             file.write(f'{metric},')
         file.write('\n')
-    return parameters_file, metric_file
 
-def save_metrics(opt, metrics):
+    train_metric_file=os.path.join(opt.save_folder, 'train_metrics.csv')
+    with open(train_metric_file, mode='w') as file:
+        for metric in metrics:
+            file.write(f'{metric},')
+        file.write('\n')
+    return parameters_file, metric_file, train_metric_file
+
+def save_metrics(opt, valid_metrics, train_metrics):
     """ Function to save the metrics on metrics.csv for each epoch """
 
     with open(opt.metric_file, mode='a') as file:
-        for metric in metrics:
+        for metric in valid_metrics:
+            _metric=round(metric.item()*100, 2)
+            file.write(f'{_metric},')
+        file.write('\n')
+        
+    with open(opt.train_metric_file, mode='a') as file:
+        for metric in train_metrics:
             _metric=round(metric.item()*100, 2)
             file.write(f'{_metric},')
         file.write('\n')

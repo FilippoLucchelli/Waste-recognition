@@ -24,7 +24,7 @@ if __name__=='__main__':
     train_set=CustomDataset(opt, opt.train_folds) #actual trainset
     valid_set=CustomDataset(opt, opt.valid_folds) #validation set
 
-    opt.parameters_file, opt.metric_file=utils.init_files(opt) #initialize files
+    opt.parameters_file, opt.metric_file, opt.train_metric_file=utils.init_files(opt) #initialize files
 
     train_loader=DataLoader(train_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
     valid_loader=DataLoader(valid_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
@@ -53,7 +53,8 @@ if __name__=='__main__':
         for metric_name in utils.metric_names(opt):
             plotters[metric_name].update_plot(epoch, [valid_metrics[metric_name].cpu(), train_metrics[metric_name].cpu()])
         
-        utils.save_metrics(opt, valid_metrics.values())
+        utils.save_metrics(opt, valid_metrics.values(), train_metrics.values())
+
 
         if scheduler is not None:
             scheduler.step()
