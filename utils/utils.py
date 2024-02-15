@@ -29,7 +29,7 @@ def load_model(opt):
     n_channels=len(opt.channels)+3
 
     if model_name == 'unet':
-        model=smp.Unet(encoder_name='resnet34',
+        model=smp.Unet(encoder_name='resnet50',
                        encoder_weights='imagenet',
                        in_channels=3,
                        classes=n_classes)
@@ -224,6 +224,7 @@ def get_folds(opt):
 
 def create_bash(opt):
     test_file_path=os.path.join(opt.save_folder, 'test_script.sh')
-    with open(test_file_path) as file:
+    model=os.path.basename(opt.save_folder)
+    with open(test_file_path, mode='w') as file:
         file.write('#!/bin/sh\n')
-        file.write(f'python3 test.py --data_dir {opt.data_dir} {opt.k_fold} --model_dir {opt.save_folder}')
+        file.write(f'python3 test.py --data_dir {opt.data_dir} --k_fold --model_dir {model}')
