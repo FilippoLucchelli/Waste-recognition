@@ -25,6 +25,7 @@ if __name__=='__main__':
     valid_set=CustomDataset(opt, opt.valid_folds) #validation set
 
     opt.parameters_file, opt.metric_file, opt.train_metric_file=utils.init_files(opt) #initialize files
+    utils.create_bash(opt)
 
     train_loader=DataLoader(train_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
     valid_loader=DataLoader(valid_set, batch_size=opt.batch_size, shuffle=True, drop_last=True)
