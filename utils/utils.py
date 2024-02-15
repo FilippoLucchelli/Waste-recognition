@@ -188,10 +188,10 @@ def save_metrics(opt, valid_metrics, train_metrics):
             file.write(f'{_metric},')
         file.write('\n')
 
-def save_model(opt, model):
+def save_model(opt, model, model_name):
     """ Function to save the parameters of the last model (model.pth) """
 
-    save_path=os.path.join(opt.save_folder, 'model.pth')
+    save_path=os.path.join(opt.save_folder, f'{model_name}.pth')
     torch.save(model.state_dict(), save_path)
 
 def read_csv(opt):

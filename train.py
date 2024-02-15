@@ -42,7 +42,8 @@ if __name__=='__main__':
         plotters[metric_name]=visdom_utils.VisUtils(metric_name, vis)
 
     for epoch in range(opt.epochs):
-
+        if epoch==300:
+            utils.save_model(opt, model, 'model_300')
         train_metrics, train_loss=train_epoch(model=model, criterion=criterion,
                                               trainloader=train_loader,
                                               optimizer=optimizer, device=device,
@@ -60,4 +61,4 @@ if __name__=='__main__':
         if scheduler is not None:
             scheduler.step()
             
-    utils.save_model(opt, model)
+    utils.save_model(opt, model, 'model_700')
