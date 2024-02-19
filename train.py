@@ -61,4 +61,4 @@ if __name__=='__main__':
         if scheduler is not None:
             scheduler.step()
             
-    utils.save_model(opt, model, 'model_700')
+    utils.save_model(opt, model, 'model')
