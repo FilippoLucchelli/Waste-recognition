@@ -1,9 +1,3 @@
-/k_fold_data/
-
-/data_aer/
-
 __pycache__/
-
-results/
 
 *.ipynb
