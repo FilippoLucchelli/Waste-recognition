@@ -4,7 +4,10 @@ import visdom
 import utils.utils as utils
 import numpy as np
 import ast
+import cv2
+import matplotlib.pyplot as plt
 import time
+
 
 
 #### Utils for the test phase
@@ -20,16 +23,18 @@ def test(opt, model, test_loader, device):
     counter=0
     metrics={metric_name:0 for metric_name in utils.metric_names(opt)} #initialize metric dict
     with torch.no_grad():
-        for img, mask in test_loader:        
+        for img, mask in test_loader:       
             img,mask=img.to(device), mask.to(device)
+            
             out=model(img)
-
+            
             #Move tensor to cpu and numpy, transform logits into number with argmax, then apply colormap and transpose to feed into visdom
-            out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2)) 
-            _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2)) 
+            out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
+            _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
+            img4print=img_for_print(img)
             filler=np.zeros((_mask.shape[0], _mask.shape[1], _mask.shape[2], 10)) # White space between images
             
-            imgs_print=np.concatenate([_mask, filler, out_mask], axis=3)
+            imgs_print=np.concatenate([_mask, filler, out_mask, filler, img4print], axis=3)
 
             for img_print in imgs_print:
                 vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server    
@@ -78,3 +83,20 @@ def print_metrics(vis, metrics):
         txt+=f'{metric_name}: {metric_val} <br>'
     
     vis.text(txt, win='metrics')
+
+
+
+#####TODO fix for batch size different then 1
+def img_for_print(img):
+    img_np=img[0,0].cpu().numpy()
+    norm_img=cv2.normalize(img_np, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    eq_img=cv2.equalizeHist(norm_img)
+    #alpha=np.ones((img_np.shape[0], img_np.shape[1]))*255
+    
+    cmap=plt.get_cmap('viridis')
+    color_img=cmap(eq_img)
+    print_img=np.expand_dims(color_img, axis=0).transpose((0,3,1,2))
+        
+    return print_img
+
+
