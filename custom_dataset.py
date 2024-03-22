@@ -37,7 +37,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         
         data=[]
-        for band_name in self.band_names:
+        for band_name in self.band_names:        
             band=np.load(self.band_paths[band_name][index])     
             data.append(band)
         
@@ -47,13 +47,15 @@ class CustomDataset(Dataset):
         if self.transforms is not None:
             data_torch=self.transforms(data_torch)
         
+        if data_torch.shape[1]!=self.opt.size and data_torch.shape[2]!=self.opt.size:
+            rs=transforms.Resize((self.opt.size, self.opt.size), antialias=True)
+            data_torch=rs(data_torch)
+        
         img=data_torch[:-1]
         mask=data_torch[-1]
         if self.opt.mean is not None:
             norm=transforms.Normalize(self.opt.mean, self.opt.std)
             img=norm(img)
-            
-
         return img, mask.long()
     
     def get_mean_std(self):
