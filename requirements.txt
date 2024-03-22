@@ -1,0 +1,10 @@
+matplotlib==3.7.5
+numpy==1.24.4
+opencv_python==4.9.0.80
+opencv_python_headless==4.8.0.74
+segmentation_models_pytorch==0.3.3
+torch==2.1.2
+torch==2.2.1
+torchvision==0.16.2
+torchvision==0.17.1
+visdom==0.2.4
