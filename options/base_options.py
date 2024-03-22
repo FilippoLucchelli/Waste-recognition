@@ -4,6 +4,8 @@ import utils.utils as utils
 from utils.test_utils import get_test_options
 
 
+SAVE_PATH='/mnt/myhdd/waste_recognition'
+
 class BaseOptions():
     """ This class defines options used during both training and test time. """
     
@@ -38,15 +40,15 @@ class BaseOptions():
     def parse(self):        
         
         self.opt=self.gather_options()
-        
+        self.opt.data_dir=os.path.join(SAVE_PATH, self.opt.data_dir)
         if self.opt.classes is None:
             self.opt.classes=utils.default_classes(self.opt)
 
         if self.opt.model_dir is not None:
-            self.opt.model_dir=os.path.join('results', self.opt.model_dir)
+            self.opt.model_dir=os.path.join(SAVE_PATH, 'results', self.opt.model_dir)
 
         if self.isTrain:
-            self.opt.save_folder=os.path.join('results', self.opt.save_folder)
+            self.opt.save_folder=os.path.join(SAVE_PATH, 'results', self.opt.save_folder)
             if self.opt.save_folder is not None:
                 os.makedirs(self.opt.save_folder, exist_ok=True)
         
