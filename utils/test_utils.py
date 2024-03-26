@@ -82,6 +82,7 @@ def print_metrics(vis, metrics):
 #####TODO fix for batch size different then 1
 
 def print_images(out, mask, img, cmap, vis):
+    """ Print images to visdom server """
     out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
     _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
     img4print=img_for_print(img)
@@ -93,6 +94,7 @@ def print_images(out, mask, img, cmap, vis):
         vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server
 
 def img_for_print(img):
+    
     img_np=img[0,0].cpu().numpy()
     norm_img=cv2.normalize(img_np, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
     eq_img=cv2.equalizeHist(norm_img)
