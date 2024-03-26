@@ -6,6 +6,7 @@ import utils.utils as utils
 import torch 
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
+import time
 
 
 class CustomDataset(Dataset):
@@ -46,6 +47,7 @@ class CustomDataset(Dataset):
 
         if self.transforms is not None:
             data_torch=self.transforms(data_torch)
+
         
         if data_torch.shape[1]!=self.opt.size and data_torch.shape[2]!=self.opt.size:
             rs=transforms.Resize((self.opt.size, self.opt.size), antialias=True)
@@ -56,6 +58,7 @@ class CustomDataset(Dataset):
         if self.opt.mean is not None:
             norm=transforms.Normalize(self.opt.mean, self.opt.std)
             img=norm(img)
+
         return img, mask.long()
     
     def get_mean_std(self):

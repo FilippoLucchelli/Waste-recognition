@@ -8,6 +8,7 @@ class TestOptions(BaseOptions):
         parser=BaseOptions.initialize(self, parser)
 
         parser.add_argument('--test_folds', type=int, nargs='*', help='folds to use for testing')
+        parser.add_argument('--print_images', action='store_true', help='print the results on visdom server')
 
         self.isTrain=False
         return parser

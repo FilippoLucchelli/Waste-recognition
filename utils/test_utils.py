@@ -12,7 +12,7 @@ import time
 
 #### Utils for the test phase
 
-def test(opt, model, test_loader, device):
+def test(opt, model, test_loader, test_loader_print, device):
     """ Function to test a trained model on a testset. Takes parameters from the training stage """
 
     model.eval()
@@ -23,23 +23,17 @@ def test(opt, model, test_loader, device):
     counter=0
     metrics={metric_name:0 for metric_name in utils.metric_names(opt)} #initialize metric dict
     with torch.no_grad():
+        if opt.print_images:
+            for img, mask in test_loader_print:
+                img, mask=img.to(device), mask.to(device)
+                out=model(img)
+                print_images(out, mask, img, cmap, vis)
+
         for img, mask in test_loader:       
             img,mask=img.to(device), mask.to(device)
             
             out=model(img)
-            
-            #Move tensor to cpu and numpy, transform logits into number with argmax, then apply colormap and transpose to feed into visdom
-            out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
-            _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
-            img4print=img_for_print(img)
-            filler=np.zeros((_mask.shape[0], _mask.shape[1], _mask.shape[2], 10)) # White space between images
-            
-            imgs_print=np.concatenate([_mask, filler, out_mask, filler, img4print], axis=3)
-
-            for img_print in imgs_print:
-                vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server    
-
-            
+                       
             mt=Metrics(out, mask)
             _metrics=mt.get_metrics(opt)
             for metric_name in _metrics:
@@ -52,7 +46,6 @@ def test(opt, model, test_loader, device):
         print_metrics(vis, metrics)
 
     return metrics
-
 
 
 def get_test_options(opt):
@@ -87,6 +80,18 @@ def print_metrics(vis, metrics):
 
 
 #####TODO fix for batch size different then 1
+
+def print_images(out, mask, img, cmap, vis):
+    out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
+    _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
+    img4print=img_for_print(img)
+    filler=np.zeros((_mask.shape[0], _mask.shape[1], _mask.shape[2], 10)) # White space between images
+    
+    imgs_print=np.concatenate([_mask, filler, out_mask, filler, img4print], axis=3)
+
+    for img_print in imgs_print:
+        vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server
+
 def img_for_print(img):
     img_np=img[0,0].cpu().numpy()
     norm_img=cv2.normalize(img_np, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
