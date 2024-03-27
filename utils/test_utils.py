@@ -47,7 +47,6 @@ def test(opt, model, test_loader, test_loader_print, device):
 
     return metrics
 
-
 def get_test_options(opt):
     """ Function to load options from the training stage. """
 
@@ -60,6 +59,8 @@ def get_test_options(opt):
     opt.std=ast.literal_eval(data['std'])
     if opt.test_folds==None:
         opt.test_folds=ast.literal_eval(data['test_folds'])
+        if opt.test_folds==[]:
+            opt.test_folds=ast.literal_eval(data['valid_folds'])
     opt.pretrained=True
 
 def print_metrics(vis, metrics):
@@ -76,10 +77,6 @@ def print_metrics(vis, metrics):
         txt+=f'{metric_name}: {metric_val} <br>'
     
     vis.text(txt, win='metrics')
-
-
-
-#####TODO fix for batch size different then 1
 
 def print_images(out, mask, img, cmap, vis):
     """ Print images to visdom server """

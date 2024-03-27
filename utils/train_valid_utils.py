@@ -36,8 +36,6 @@ def train_epoch(model, trainloader, optimizer, criterion, device, opt):
 
     return metrics, tot_loss/counter
 
-    
-
 def valid_epoch(model, validloader, criterion, device, opt):
     model.eval()    
     
@@ -61,7 +59,6 @@ def valid_epoch(model, validloader, criterion, device, opt):
             metrics[metric_name]/=counter
 
     return metrics, tot_loss/counter 
-
 
 def get_transforms(opt):
     """ Function to get the chosen transforms """
