@@ -2,17 +2,16 @@ import os
 import torch
 import numpy as np 
 import utils.utils as utils
+import yaml
 
 import torch 
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
-import time
 
 
 class CustomDataset(Dataset):
-    """ Class to load dataset. """
 
-    def __init__(self, opt, fold_list=None, transforms=None):
+    def __init__(self, opt, fold_list=None):
         
         rgb_names=['red', 'green', 'blue']
         band_names=rgb_names+opt.channels+['masks']
@@ -30,7 +29,6 @@ class CustomDataset(Dataset):
             self.band_names=band_names
             self.bands=opt.channels
             self.opt=opt
-            self.transforms=transforms
     
     def __len__(self):
         return len(self.band_paths[self.band_names[0]])
@@ -38,26 +36,19 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         
         data=[]
-        for band_name in self.band_names:        
+        for band_name in self.band_names:
             band=np.load(self.band_paths[band_name][index])     
             data.append(band)
         
         data_np=np.stack(data)
         data_torch=torch.from_numpy(data_np)
-
-        if self.transforms is not None:
-            data_torch=self.transforms(data_torch)
-
-        
-        if data_torch.shape[1]!=self.opt.size and data_torch.shape[2]!=self.opt.size:
-            rs=transforms.Resize((self.opt.size, self.opt.size), antialias=True)
-            data_torch=rs(data_torch)
         
         img=data_torch[:-1]
         mask=data_torch[-1]
         if self.opt.mean is not None:
             norm=transforms.Normalize(self.opt.mean, self.opt.std)
             img=norm(img)
+            
 
         return img, mask.long()
     
@@ -78,3 +69,5 @@ class CustomDataset(Dataset):
 
         return list(mean.values()), list(std.values())
 
+
+        

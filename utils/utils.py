@@ -152,7 +152,8 @@ def init_files(opt):
                 'classes':opt.classes,
                 'mean':opt.mean,
                 'std':opt.std,
-                'test_folds': opt.test_folds
+                'test_folds': opt.test_folds,
+                'valid_folds': opt.valid_folds
                 }
     with open(parameters_file, mode='w') as file:
         writer=csv.DictWriter(file, parameters.keys())
@@ -225,7 +226,10 @@ def get_folds(opt):
 def create_bash(opt):
     model=os.path.basename(opt.save_folder)
     data_folder=os.path.basename(opt.data_dir)
-    test_file_path=os.path.join('scripts', model, 'test_script.sh')
+    test_file_folder=os.path.join('scripts', model)
+    if not os.path.isdir(test_file_folder):
+        os.makedirs(test_file_folder)
+    test_file_path=os.path.join(test_file_folder, 'test_script.sh')
     with open(test_file_path, mode='w') as file:
         file.write('#!/bin/sh\n')
         file.write(f'python3 test.py --data_dir {data_folder} --k_fold --model_dir {model}')
