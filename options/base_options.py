@@ -40,7 +40,7 @@ class BaseOptions():
     def parse(self):        
         
         self.opt=self.gather_options()
-        self.opt.data_dir=os.path.join(SAVE_PATH, self.opt.data_dir)
+        self.opt.data_dir=os.path.join(SAVE_PATH, 'data', self.opt.data_dir)
         if self.opt.classes is None:
             self.opt.classes=utils.default_classes(self.opt)
 
