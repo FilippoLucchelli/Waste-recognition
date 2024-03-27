@@ -223,8 +223,8 @@ def get_folds(opt):
     opt.train_folds=[i for i in train_folds if i not in opt.valid_folds and i not in opt.test_folds]
 
 def create_bash(opt):
-    test_file_path=os.path.join(opt.save_folder, 'test_script.sh')
     model=os.path.basename(opt.save_folder)
+    test_file_path=os.path.join('scripts', model, 'test_script.sh')
     with open(test_file_path, mode='w') as file:
         file.write('#!/bin/sh\n')
         file.write(f'python3 test.py --data_dir {opt.data_dir} --k_fold --model_dir {model}')
