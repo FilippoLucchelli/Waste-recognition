@@ -224,7 +224,8 @@ def get_folds(opt):
 
 def create_bash(opt):
     model=os.path.basename(opt.save_folder)
+    data_folder=os.path.basename(opt.data_dir)
     test_file_path=os.path.join('scripts', model, 'test_script.sh')
     with open(test_file_path, mode='w') as file:
         file.write('#!/bin/sh\n')
-        file.write(f'python3 test.py --data_dir {opt.data_dir} --k_fold --model_dir {model}')
+        file.write(f'python3 test.py --data_dir {data_folder} --k_fold --model_dir {model}')
