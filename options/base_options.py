@@ -14,8 +14,7 @@ class BaseOptions():
 
     def initialize(self, parser):
         
-        parser.add_argument('--data_dir', required=True, help='path to images')
-        parser.add_argument('--k_fold', action='store_true', help='use a k_fold structure')
+        parser.add_argument('--data_dir', required=True, help='path to .yaml file')
         parser.add_argument('--model_dir', help='with saved model and csv files')
 
         parser.add_argument('--model', default='msnet', choices=['msnet', 'acnet', 'unet', 'unet++', 'deeplabv3', 'deeplabv3+'])
