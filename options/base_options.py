@@ -21,8 +21,10 @@ class BaseOptions():
         parser.add_argument('--size', type=int, default=640, help='size of resized data in custom dataset class')
         parser.add_argument('--n_classes', type=int, default=6, help='number of classes for segmentation')
 
-        parser.add_argument('--classes', nargs='+', help='name of classes')
+        parser.add_argument('--classes', nargs='+', help='name of classes')     
         parser.add_argument('--metrics', nargs='+', default=['iou'], help='evaluation metrics')
+
+        parser.add_argument('--single_class', action='store_true', help='use only trash class')
         
 
         self.initialized=True
@@ -39,7 +41,7 @@ class BaseOptions():
     def parse(self):        
         
         self.opt=self.gather_options()
-        self.opt.data_dir=os.path.join(SAVE_PATH, 'data', self.opt.data_dir)
+        #self.opt.data_dir=os.path.join(SAVE_PATH, 'data', self.opt.data_dir)
         if self.opt.classes is None:
             self.opt.classes=utils.default_classes(self.opt)
 
@@ -52,6 +54,9 @@ class BaseOptions():
                 os.makedirs(self.opt.save_folder, exist_ok=True)
         
         self.opt.isTrain=self.isTrain
+        if self.opt.isTrain:
+            self.opt.ground_truth=True
+
         if not self.isTrain:
             get_test_options(self.opt)
 

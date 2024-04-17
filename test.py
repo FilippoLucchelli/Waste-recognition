@@ -1,4 +1,4 @@
-from custom_dataset import CustomDataset
+from custom_dataset import CustomDataset, CustomDatasetYaml
 from options.test_options import TestOptions
 import utils.utils as utils
 import utils.test_utils as test_utils
@@ -13,7 +13,7 @@ if __name__=='__main__':
         
     device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    test_set=CustomDataset(opt, opt.test_folds)
+    test_set=CustomDatasetYaml(opt, phase='test')
     test_loader=DataLoader(test_set, batch_size=4, shuffle=True, drop_last=True)
     test_loader_print=DataLoader(test_set, batch_size=1, shuffle=True, drop_last=True)
 
