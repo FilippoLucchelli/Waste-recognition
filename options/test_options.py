@@ -9,6 +9,7 @@ class TestOptions(BaseOptions):
 
         parser.add_argument('--test_folds', type=int, nargs='*', help='folds to use for testing')
         parser.add_argument('--print_images', action='store_true', help='print the results on visdom server')
+        parser.add_argument('--ground_truth', action='store_true', help='return and print ground truth from dataloader')
 
         self.isTrain=False
         return parser

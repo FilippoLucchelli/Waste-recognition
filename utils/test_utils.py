@@ -24,28 +24,40 @@ def test(opt, model, test_loader, test_loader_print, device):
     metrics={metric_name:0 for metric_name in utils.metric_names(opt)} #initialize metric dict
     with torch.no_grad():
         if opt.print_images:
-            for img, mask in test_loader_print:
-                img, mask=img.to(device), mask.to(device)
+            if opt.ground_truth:
+                for img, mask in test_loader_print:
+                    img, mask=img.to(device), mask.to(device)
+                    out=model(img)
+                    print_images_gt(out, mask, img, cmap, vis)
+            else:
+                for img in test_loader_print:
+                    img=img.to(device)
+                    out=model(img)
+                    print_images_no_gt(out, img, cmap, vis)
+
+        if opt.ground_truth:
+            for img, mask in test_loader:       
+                img,mask=img.to(device), mask.to(device)
+                
                 out=model(img)
-                print_images(out, mask, img, cmap, vis)
+                        
+                mt=Metrics(out, mask)
+                _metrics=mt.get_metrics(opt)
+                for metric_name in _metrics:
+                    metrics[metric_name]+=_metrics[metric_name]                  
+                        
 
-        for img, mask in test_loader:       
-            img,mask=img.to(device), mask.to(device)
-            
-            out=model(img)
-                       
-            mt=Metrics(out, mask)
-            _metrics=mt.get_metrics(opt)
-            for metric_name in _metrics:
-                metrics[metric_name]+=_metrics[metric_name]                  
-                       
+                counter+=1
+            for metric_name in metrics:
+                metrics[metric_name]/=counter
+            print_metrics(vis, metrics)
 
-            counter+=1
-        for metric_name in metrics:
-            metrics[metric_name]/=counter
-        print_metrics(vis, metrics)
+            return metrics
+        
+        else:
+            return None
 
-    return metrics
+
 
 def get_test_options(opt):
     """ Function to load options from the training stage. """
@@ -57,10 +69,10 @@ def get_test_options(opt):
     opt.n_classes=ast.literal_eval(data['n_classes'])
     opt.mean=ast.literal_eval(data['mean'])
     opt.std=ast.literal_eval(data['std'])
-    if opt.test_folds==None:
+    """ if opt.test_folds==None:
         opt.test_folds=ast.literal_eval(data['test_folds'])
         if opt.test_folds==[]:
-            opt.test_folds=ast.literal_eval(data['valid_folds'])
+            opt.test_folds=ast.literal_eval(data['valid_folds']) """
     opt.pretrained=True
 
 def print_metrics(vis, metrics):
@@ -78,7 +90,7 @@ def print_metrics(vis, metrics):
     
     vis.text(txt, win='metrics')
 
-def print_images(out, mask, img, cmap, vis):
+def print_images_gt(out, mask, img, cmap, vis):
     """ Print images to visdom server """
     out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
     _mask=cmap(mask.cpu().numpy()).transpose((0,3,1,2))
@@ -86,6 +98,17 @@ def print_images(out, mask, img, cmap, vis):
     filler=np.zeros((_mask.shape[0], _mask.shape[1], _mask.shape[2], 10)) # White space between images
     
     imgs_print=np.concatenate([_mask, filler, out_mask, filler, img4print], axis=3)
+
+    for img_print in imgs_print:
+        vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server
+
+def print_images_no_gt(out, img, cmap, vis):
+    """ Print images to visdom server """
+    out_mask=cmap(torch.argmax(out, dim=1).cpu().numpy()).transpose((0,3,1,2))
+    img4print=img_for_print(img)
+    filler=np.zeros((out_mask.shape[0], out_mask.shape[1], out_mask.shape[2], 10)) # White space between images
+    
+    imgs_print=np.concatenate([out_mask, filler, img4print], axis=3)
 
     for img_print in imgs_print:
         vis.image(img_print, win='image', opts=dict(store_history=True)) # Send to visdom server

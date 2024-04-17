@@ -2,9 +2,9 @@ import os
 import torch
 from torch.utils.data import DataLoader
 from options.train_options import TrainOptions
-from custom_dataset import CustomDataset
+from custom_dataset import CustomDataset, CustomDatasetYaml
 from utils import utils
-from utils.train_valid_utils import train_epoch, valid_epoch, get_pretrained_options
+from utils.train_valid_utils import train_epoch, valid_epoch, get_pretrained_options, get_transforms
 import utils.visdom_utils as visdom_utils
 import time
 from visdom import Visdom
@@ -17,12 +17,13 @@ if __name__=='__main__':
 
     device=torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
     
-    utils.get_folds(opt) #get folds for training
+    #utils.get_folds(opt) #get folds for training
 
-    train_set=CustomDataset(opt, opt.train_folds) #set for mean std
-    opt.mean, opt.std=train_set.get_mean_std() #compute mean std for normalization
-    train_set=CustomDataset(opt, opt.train_folds) #actual trainset
-    valid_set=CustomDataset(opt, opt.valid_folds) #validation set
+    train_set_mean_std=CustomDatasetYaml(opt, phase='train')
+    opt.mean, opt.std=train_set_mean_std.get_mean_std()
+    transforms=get_transforms(opt)
+    train_set=CustomDatasetYaml(opt, phase='train', transforms=transforms)
+    valid_set=CustomDatasetYaml(opt, phase='val')
 
     opt.parameters_file, opt.metric_file, opt.train_metric_file=utils.init_files(opt) #initialize files
     utils.create_bash(opt)
