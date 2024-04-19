@@ -2,6 +2,7 @@ import argparse
 import os
 import utils.utils as utils
 from utils.test_utils import get_test_options
+import yaml
 
 
 SAVE_PATH='/mnt/myhdd/waste_recognition'
@@ -45,11 +46,17 @@ class BaseOptions():
         if self.opt.classes is None:
             self.opt.classes=utils.default_classes(self.opt)
 
+        with open(self.opt.data_dir, 'r') as yml:
+            conf=yaml.safe_load(yml)
+        
+        root=conf['root_dir']
+
         if self.opt.model_dir is not None:
-            self.opt.model_dir=os.path.join(SAVE_PATH, 'results', self.opt.model_dir)
+            self.opt.model_dir=os.path.join(root, 'results', self.opt.model_dir)
+
 
         if self.isTrain:
-            self.opt.save_folder=os.path.join(SAVE_PATH, 'results', self.opt.save_folder)
+            self.opt.save_folder=os.path.join(root, 'results', self.opt.save_folder)
             if self.opt.save_folder is not None:
                 os.makedirs(self.opt.save_folder, exist_ok=True)
         
