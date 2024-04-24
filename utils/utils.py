@@ -146,7 +146,6 @@ def init_files(opt):
     parameters={'channels':opt.channels, 
                 'data_dir':opt.data_dir,
                 'model':opt.model,
-                'k_fold':opt.k_fold,
                 'size':opt.size,
                 'n_classes':opt.n_classes,
                 'classes':opt.classes,

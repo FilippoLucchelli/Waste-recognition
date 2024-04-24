@@ -33,7 +33,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--batch_size', type=int, default=4, help='batch size for training and validation')
         parser.add_argument('--transforms', nargs='*', default=['h_flip', 'crop'], help='transforms for training: [v_flip, h_flip, crop]')
         parser.add_argument('--probability', type=float, default=0.5, help='probablity of flips')
-        parser.add_argument('--crop_scale', type=float, default=0.5, help='min scale parameter in crop')
+        parser.add_argument('--scale', type=float, default=0.5, help='min scale parameter in crop')
 
         self.isTrain=True
 
