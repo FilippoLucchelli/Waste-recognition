@@ -26,6 +26,7 @@ class BaseOptions():
         parser.add_argument('--metrics', nargs='+', default=['iou'], help='evaluation metrics')
 
         parser.add_argument('--single_class', action='store_true', help='use only trash class')
+        parser.add_argument('--no_rgb', action='store_true', help='avoid rgb')
         
 
         self.initialized=True

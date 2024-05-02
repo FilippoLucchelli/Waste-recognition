@@ -81,3 +81,4 @@ def get_pretrained_options(opt):
     opt.model=(data['model'])
     opt.size=ast.literal_eval(data['size'])
     opt.n_classes=ast.literal_eval(data['n_classes'])
+    opt.no_rgb=ast.literal_eval(data['no_rgb'])

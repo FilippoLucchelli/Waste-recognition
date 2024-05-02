@@ -25,30 +25,32 @@ def load_model(opt):
     
     n_classes=opt.n_classes    
     ###### add pretrained options
-        
-    n_channels=len(opt.channels)+3
+    if opt.no_rgb:
+        n_channels=len(opt.channels)
+    else:
+        n_channels=len(opt.channels)+3
 
     if model_name == 'unet':
         model=smp.Unet(encoder_name='resnet50',
                        encoder_weights='imagenet',
-                       in_channels=3,
+                       in_channels=n_channels,
                        classes=n_classes)
     elif model_name == 'unet++':
         model=smp.UnetPlusPlus(encoder_name='resnet34',
                                encoder_weights='imagenet',
-                               in_channels=3,
+                               in_channels=n_channels,
                                classes=n_classes)
     
     elif model_name == 'deeplabv3':
         model=smp.DeepLabV3(encoder_name='resnet34',
                             encoder_weights='imagenet',
-                            in_channels=3,
+                            in_channels=n_channels,
                             classes=n_classes)
         
     elif model_name == 'deeplabv3+':
         model=smp.DeepLabV3Plus(encoder_name='resnet34',
                                 encoder_weights='imagenet',
-                                in_channels=3,
+                                in_channels=n_channels,
                                 classes=n_classes)
         
     elif model_name == 'acnet':
@@ -151,8 +153,7 @@ def init_files(opt):
                 'classes':opt.classes,
                 'mean':opt.mean,
                 'std':opt.std,
-                'test_folds': opt.test_folds,
-                'valid_folds': opt.valid_folds
+                'no_rgb':opt.no_rgb
                 }
     with open(parameters_file, mode='w') as file:
         writer=csv.DictWriter(file, parameters.keys())

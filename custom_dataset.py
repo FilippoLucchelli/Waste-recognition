@@ -8,6 +8,8 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
 
+import time
+
 
 class CustomDataset(Dataset):
 
@@ -84,7 +86,10 @@ class CustomDatasetYaml:
         elif phase=='test':
             folder=os.path.join(conf['root_dir'], conf['test_dir'])
         
-        rgb_names=['red', 'green', 'blue']
+        if opt.no_rgb:
+            rgb_names=[]
+        else:
+            rgb_names=['red', 'green', 'blue']
         
         if opt.ground_truth:
             band_names=rgb_names+opt.channels+['masks']
@@ -135,7 +140,7 @@ class CustomDatasetYaml:
         if self.opt.mean is not None:
             norm=transforms.Normalize(self.opt.mean, self.opt.std)
             img=norm(img)
-            
+
         if self.opt.ground_truth:
             return img, mask.long()
         else:

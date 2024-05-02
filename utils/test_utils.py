@@ -69,10 +69,7 @@ def get_test_options(opt):
     opt.n_classes=ast.literal_eval(data['n_classes'])
     opt.mean=ast.literal_eval(data['mean'])
     opt.std=ast.literal_eval(data['std'])
-    """ if opt.test_folds==None:
-        opt.test_folds=ast.literal_eval(data['test_folds'])
-        if opt.test_folds==[]:
-            opt.test_folds=ast.literal_eval(data['valid_folds']) """
+    opt.no_rgb=ast.literal_eval(data['no_rgb'])
     opt.pretrained=True
 
 def print_metrics(vis, metrics):

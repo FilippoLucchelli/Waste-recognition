@@ -3,9 +3,9 @@
 root_dir: /mnt/myhdd/waste_recognition # Main directory with data
 
 #folders for train, validation, and test directories
-train_dir: data/data_land/train 
-val_dir: data/data_land/val
-test_dir: data/data_land/test
+train_dir: data/proc_land/train 
+val_dir: data/proc_land/val
+test_dir: data/proc_land/test
 
 
 
