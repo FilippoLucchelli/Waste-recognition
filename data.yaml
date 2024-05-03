@@ -1,11 +1,11 @@
 ---
 
-root_dir: /mnt/myhdd/waste_recognition # Main directory with data
+root_dir: # Main directory with data
 
 #folders for train, validation, and test directories
-train_dir: data/proc_land/train 
-val_dir: data/proc_land/val
-test_dir: data/proc_land/test
+train_dir: # path/to/train 
+val_dir: # path/to/val
+test_dir: # path/to/test
 
 
 
