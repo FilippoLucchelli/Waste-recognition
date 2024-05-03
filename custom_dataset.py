@@ -109,7 +109,7 @@ class CustomDatasetYaml:
         self.opt=opt
     
     def __len__(self):
-        return len(self.band_paths['red'])
+        return len(self.band_paths[self.band_names[0]])
     
     def __getitem__(self, index):
         data=[]
