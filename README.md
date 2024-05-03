@@ -11,6 +11,8 @@ Repository for training and testing different segmentation models on multispectr
 - MSNet
 
 ## Data structure
+
+```md
 root_dir/
 └── data_folder/
     └── test/
@@ -18,3 +20,4 @@ root_dir/
         ├── band2
         ├── ...
         └── band n
+```
