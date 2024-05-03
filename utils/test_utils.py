@@ -122,5 +122,3 @@ def img_for_print(img):
     print_img=np.expand_dims(color_img, axis=0).transpose((0,3,1,2))
         
     return print_img
-
-
