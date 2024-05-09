@@ -82,3 +82,23 @@ def get_pretrained_options(opt):
     opt.size=ast.literal_eval(data['size'])
     opt.n_classes=ast.literal_eval(data['n_classes'])
     opt.no_rgb=ast.literal_eval(data['no_rgb'])
+
+class EarlyStopper:
+    def __init__(self, patience=3, min_delta=0):
+        self.patience=patience
+        self.min_delta=min_delta
+        self.counter=0
+        self.max_iou=0
+        self.model=None
+
+
+    def early_stop(self, iou):
+        if iou>self.max_iou:
+            self.max_iou=iou
+            self.counter=0
+            
+        elif iou<(self.max_iou+self.min_delta):
+            self.counter+=1
+            if self.counter>=self.patience:
+                return True
+        return False

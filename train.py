@@ -4,10 +4,11 @@ from torch.utils.data import DataLoader
 from options.train_options import TrainOptions
 from custom_dataset import CustomDataset, CustomDatasetYaml
 from utils import utils
-from utils.train_valid_utils import train_epoch, valid_epoch, get_pretrained_options, get_transforms
+from utils.train_valid_utils import train_epoch, valid_epoch, get_pretrained_options, get_transforms, EarlyStopper
 import utils.visdom_utils as visdom_utils
 import time
 from visdom import Visdom
+from statistics import median
 
 
 if __name__=='__main__':
@@ -35,16 +36,19 @@ if __name__=='__main__':
     criterion=utils.load_loss(opt)
     optimizer=utils.load_optimizer(opt, model)
     scheduler=utils.load_scheduler(opt, optimizer=optimizer)
+    es=EarlyStopper(patience=5, min_delta=0.01)
     
     plotters={}
     vis=Visdom()
     vis.close()
+
+    stop=False
+    counter=0
+    iou=[]
     for metric_name in utils.metric_names(opt):
         plotters[metric_name]=visdom_utils.VisUtils(metric_name, vis)
 
     for epoch in range(opt.epochs):
-        if epoch==300:
-            utils.save_model(opt, model, 'model_300')
         train_metrics, train_loss=train_epoch(model=model, criterion=criterion,
                                               trainloader=train_loader,
                                               optimizer=optimizer, device=device,
@@ -58,6 +62,20 @@ if __name__=='__main__':
         
         utils.save_metrics(opt, valid_metrics.values(), train_metrics.values())
 
+        if counter<opt.es_patience:
+            iou.append(valid_metrics['miou'])
+            counter+=1
+
+        if counter==opt.es_patience:
+            counter=0
+            med_iou=median(iou)
+
+            iou=[]
+            if epoch>opt.es_start_epoch:
+                stop=es.early_stop(med_iou)
+        
+        if stop:
+            break
 
         if scheduler is not None:
             scheduler.step()

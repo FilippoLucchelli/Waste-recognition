@@ -13,6 +13,8 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--loss', default='jaccard', choices=['jaccard', 'crossentropy'])
         parser.add_argument('--valid_folds', type=int, nargs='+', help='folds to use for validation')
         parser.add_argument('--test_folds', type=int, nargs='*', default=[],help='folds to use for testing')
+        parser.add_argument('--es_patience', type=int, default=5, help='patience for early stopping')
+        parser.add_argument('--es_start_epoch', type=int, default=110, help='starting epoch for early stopping')
 
         parser.add_argument('--lr', default=0.001, type=float, help='initial learning rate')
         parser.add_argument('--scheduler', default='cosine', choices=['none', 'step', 'plateau', 'triangular'])

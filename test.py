@@ -14,7 +14,7 @@ if __name__=='__main__':
     device=torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     test_set=CustomDatasetYaml(opt, phase='test')
-    test_loader=DataLoader(test_set, batch_size=4, shuffle=True, drop_last=True)
+    test_loader=DataLoader(test_set, batch_size=4, shuffle=False, drop_last=True)
     test_loader_print=DataLoader(test_set, batch_size=1, shuffle=True, drop_last=True)
 
     model=utils.load_model(opt).to(device)
