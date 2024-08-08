@@ -69,6 +69,6 @@ python train.py --help
 ```
 ## Results
 
-![Example of segmentation from ground set](images\ex_ground.png)
+![Example of segmentation from ground set](images/ex_ground.png)
 
-![Example of segmentation from aerial set](images\ex_aer.png)
+![Example of segmentation from aerial set](images/ex_aer.png)
