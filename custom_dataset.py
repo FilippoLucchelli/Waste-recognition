@@ -132,7 +132,7 @@ class CustomDatasetYaml:
             mask=data_torch[-1]
         else:
             img=data_torch
-        
+
         
         if self.opt.single_class:
             mask=(mask==3).int()
