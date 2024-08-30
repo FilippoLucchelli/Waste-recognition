@@ -1,6 +1,11 @@
 # Waste-recognition
 Repository for training and testing different segmentation models on multispectral waste dataset.
 
+The dataset and models' weights can be found at this [link](https://gofile.me/5waZC/m9EJIKIWh)
+
+
+
+
 ## Models
 
 - [UNet](https://link.springer.com/chapter/10.1007/978-3-319-24574-4_28)
