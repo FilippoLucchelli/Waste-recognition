@@ -1,79 +1,177 @@
-# Waste-recognition
-Repository for training and testing different segmentation models on multispectral waste dataset.
+# Waste Recognition
 
-The dataset and models' weights can be found at this [link](https://gofile.me/5waZC/m9EJIKIWh)
+Training, evaluation and prediction for semantic segmentation of multispectral
+waste datasets.
 
+The project supports:
 
+- UNet, UNet++, DeepLabV3 and DeepLabV3+ through
+  `segmentation-models-pytorch`;
+- ACNet for RGB + NIR inputs;
+- MSNet for RGB plus one or more auxiliary bands;
+- deterministic matching of per-band NumPy files;
+- joint image/mask augmentation;
+- dataset-level IoU and Dice metrics;
+- resumable, versioned checkpoints;
+- CPU and CUDA execution.
 
+## Installation
 
-## Models
-
-- [UNet](https://link.springer.com/chapter/10.1007/978-3-319-24574-4_28)
-- [UNet++](https://www.researchgate.net/publication/327749044_UNet_A_Nested_U-Net_Architecture_for_Medical_Image_Segmentation_4th_International_Workshop_DLMIA_2018_and_8th_International_Workshop_ML-CDS_2018_Held_in_Conjunction_with_MICCAI_2018_Granada_Spain_Sept)
-- [DeepLabV3](https://arxiv.org/abs/1706.05587)
-- [DeepLabV3+](https://arxiv.org/abs/1802.02611)
-- [ACNet](https://arxiv.org/abs/1905.10089)
-- [MSNet](https://www.tandfonline.com/doi/full/10.1080/15481603.2022.2101728)
-
-## Data structure
-
-The images need to be in .npy format.
-
-```md
-root_dir/
-├── data_folder/
-│   ├── test/
-│   │   ├── band1
-│   │   ├── band2
-│   │   ├── ...
-│   │   └── band n
-│   ├── train/
-│   │   ├── band1
-│   │   └── ...
-│   └── val/
-│       ├── band1
-│       └── ...
-└── results/
-    └── result_folder_1/
-        ├── model.pth
-        └── parameters.csv
-
-```
-
-The structure of the .yaml file can be found under "data.yaml".
-
-The "parameters.csv" file is created during training.
-
-## Preprocessing
-The preprocessing steps for the dataset (undistortion and registration) can be found at this [link](https://github.com/FilippoLucchelli/DJI_Image_Processing).
-
-## Usage
-
-### Visdom
-Both "train.py" and "test.py" use [visdom](https://github.com/fossasia/visdom) for visualisation of the results. Starting a visdom server on another terminal is required for the scripts to work.
-
-### Training
+Python 3.10 or newer is required.
 
 ```console
-python train.py --data_dir data.yaml --model msnet --save_folder result_folder 
-
+python -m venv .venv
+.venv\Scripts\python -m pip install -e .
 ```
-For an overview of all the options use
+
+On Linux or macOS, activate the environment using the corresponding `bin`
+directory. If a platform-specific PyTorch build is required, install PyTorch
+first using the official instructions and then install this project with
+`--no-deps`.
+
+ImageNet encoder weights are not downloaded automatically. Enable them
+explicitly with `--encoder_pretrained`.
+
+## Dataset
+
+The YAML file describes the dataset root and the split folders:
+
+```yaml
+root_dir: path/to/dataset
+train_dir: train
+val_dir: validation
+test_dir: test
+```
+
+Relative `root_dir` values are resolved from the YAML location. Split paths are
+resolved from `root_dir`.
+
+Each split contains one folder per channel and, when ground truth is available,
+a `masks` folder:
+
+```text
+dataset/
+├── train/
+│   ├── red/
+│   │   └── img_000_red.npy
+│   ├── green/
+│   │   └── img_000_green.npy
+│   ├── blue/
+│   │   └── img_000_blue.npy
+│   ├── nir/
+│   │   └── img_000_nir.npy
+│   └── masks/
+│       └── img_000_masks.npy
+├── validation/
+└── test/
+```
+
+The channel suffix is optional. For example, `img_000.npy` is also accepted.
+Every folder must contain exactly the same sample IDs; training stops with an
+explicit validation error if a band or mask is missing.
+
+## Training
+
+The historical command remains valid:
+
 ```console
-python train.py --help
+python train.py \
+  --data_dir data.yaml \
+  --model msnet \
+  --channels nir \
+  --save_folder experiment_01
 ```
 
-### Test
+After installation, the equivalent command is:
 
 ```console
-python test.py --data_dir data.yaml --model_dir result_folder
+waste-train --data_dir data.yaml --model msnet --channels nir --save_folder experiment_01
 ```
-For an overview of all the options use
+
+Useful low-resource options:
+
 ```console
-python train.py --help
+waste-train \
+  --data_dir data.yaml \
+  --model unet \
+  --channels nir \
+  --save_folder cpu_test \
+  --device cpu \
+  --size 256 \
+  --batch_size 1 \
+  --num_workers 0 \
+  --epochs 2 \
+  --loss crossentropy \
+  --scheduler none
 ```
-## Results
 
-![Example of segmentation from ground set](images/ex_ground.png)
+Resume a run:
 
-![Example of segmentation from aerial set](images/ex_aer.png)
+```console
+waste-train \
+  --data_dir data.yaml \
+  --save_folder continued_run \
+  --model_dir experiment_01 \
+  --resume
+```
+
+`--pretrained` remains an alias for `--resume`. Use
+`--encoder_pretrained` specifically for ImageNet initialization.
+
+## Evaluation and prediction
+
+Evaluate a test split containing masks:
+
+```console
+python test.py \
+  --data_dir data.yaml \
+  --model_dir experiment_01 \
+  --ground_truth \
+  --batch_size 1
+```
+
+Generate NPY prediction masks when ground truth is absent:
+
+```console
+waste-evaluate \
+  --data_dir data.yaml \
+  --model_dir experiment_01 \
+  --predictions_folder predictions
+```
+
+Visdom is no longer required. The historical `--print_images` option is
+accepted but only emits a migration warning.
+
+## Run outputs
+
+```text
+results/experiment_01/
+├── config.json
+├── training_config.json
+├── train_manifest.csv
+├── validation_manifest.csv
+├── metrics.csv
+├── best.pt
+├── last.pt
+└── model.pth
+```
+
+- `config.json` contains typed model and normalization metadata.
+- `training_config.json` contains the complete training CLI configuration.
+- the manifest files record the exact band-to-sample mapping.
+- `best.pt` is the best resumable checkpoint.
+- `last.pt` is the latest resumable checkpoint.
+- `model.pth` is a bare state dictionary retained for compatibility.
+
+Historical bare `model.pth` checkpoints remain loadable.
+
+## Lightweight validation
+
+The repository tests do not train a neural network:
+
+```console
+python -m unittest discover -s tests -v
+```
+
+Manifest, configuration and statistics tests run without PyTorch. Small tensor
+tests are automatically skipped when PyTorch is not installed.

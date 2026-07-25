@@ -1,104 +1,80 @@
+"""Compatibility helpers for historical imports."""
+
+from __future__ import annotations
+
 import torch
-from torchvision import transforms
-import numpy as np
-from utils.metrics import Metrics
-import utils.utils as utils
-import time
-import ast
+
+from waste_recognition.config import load_run_metadata
+from waste_recognition.engine import run_epoch
+from waste_recognition.transforms import JointTransform
+
+
+def _class_names(opt) -> tuple[str, ...]:
+    return tuple(opt.classes.keys() if isinstance(opt.classes, dict) else opt.classes)
+
+
+def _legacy_result(result):
+    metrics = {name: torch.tensor(value) for name, value in result.metrics.items()}
+    return metrics, torch.tensor(result.loss)
+
 
 def train_epoch(model, trainloader, optimizer, criterion, device, opt):
+    result = run_epoch(
+        model=model,
+        loader=trainloader,
+        optimizer=optimizer,
+        criterion=criterion,
+        device=device,
+        class_names=_class_names(opt),
+    )
+    return _legacy_result(result)
 
-    model.train()
-    
-    counter=0
-
-    metrics={metric_name:0 for metric_name in utils.metric_names(opt)}  #initialize metric dictionary
-    tot_loss=0  
-    
-    for img, mask in trainloader:
-        img, mask= img.to(device), mask.to(device)
-        optimizer.zero_grad()
-        output=model(img)
-        loss=criterion(output, mask)
-        loss.backward()
-        optimizer.step()
-
-        tot_loss+=loss
-
-        mt=Metrics(output, mask)
-        _metrics=mt.get_metrics(opt) #compute metrics for the batch
-        for metric_name in _metrics:
-            metrics[metric_name]+=_metrics[metric_name] #accumulate metrics                    
-        
-        counter+=1
-    for metric_name in metrics:
-         metrics[metric_name]/=counter #average metrics
-
-    return metrics, tot_loss/counter
 
 def valid_epoch(model, validloader, criterion, device, opt):
-    model.eval()    
-    
-    with torch.no_grad():
-        metrics={metric_name:0 for metric_name in utils.metric_names(opt)}   
-        tot_loss=0
-        counter=0
+    result = run_epoch(
+        model=model,
+        loader=validloader,
+        criterion=criterion,
+        device=device,
+        class_names=_class_names(opt),
+    )
+    return _legacy_result(result)
 
-        for img, mask in validloader:
-            img, mask = img.to(device), mask.to(device)
-            output=model(img)
-            loss=criterion(output, mask)
-            
-            mt=Metrics(output, mask)
-            _metrics=mt.get_metrics(opt)
-            for metric_name in _metrics:
-                metrics[metric_name]+=_metrics[metric_name]                          
-            
-            counter+=1
-        for metric_name in metrics:
-            metrics[metric_name]/=counter
-
-    return metrics, tot_loss/counter 
 
 def get_transforms(opt):
-    """ Function to get the chosen transforms """
-    tr=[transforms.Resize(opt.size)]
-    if 'v_flip' in opt.transforms:
-        tr.append(transforms.RandomVerticalFlip(opt.probability))
-    if 'h_flip' in opt.transforms:
-        tr.append(transforms.RandomHorizontalFlip(opt.probability))
-    if 'crop' in opt.transforms:
-        tr.append(transforms.RandomResizedCrop(size=opt.size, scale=(opt.scale, 1.0)))
-    
-    transform=transforms.Compose(tr)
-    return transform
-    
-def get_pretrained_options(opt):
-    """ Function to load options from the trained model. """
+    selected = set(getattr(opt, "transforms", ()))
+    return JointTransform(
+        opt.size,
+        training=True,
+        horizontal_flip_probability=opt.probability if "h_flip" in selected else 0,
+        vertical_flip_probability=opt.probability if "v_flip" in selected else 0,
+        crop_min_scale=opt.scale if "crop" in selected else None,
+    )
 
-    data=utils.read_csv(opt)
-    opt.channels=ast.literal_eval(data['channels'])
-    opt.model=(data['model'])
-    opt.size=ast.literal_eval(data['size'])
-    opt.n_classes=ast.literal_eval(data['n_classes'])
-    opt.no_rgb=ast.literal_eval(data['no_rgb'])
+
+def get_pretrained_options(opt):
+    metadata = load_run_metadata(opt.model_dir)
+    opt.channels = list(metadata.channels[3:])
+    opt.model = metadata.model
+    opt.size = metadata.size
+    opt.n_classes = metadata.n_classes
+    opt.no_rgb = metadata.channels[:3] != ("red", "green", "blue")
+    opt.mean = list(metadata.mean)
+    opt.std = list(metadata.std)
+
 
 class EarlyStopper:
     def __init__(self, patience=3, min_delta=0):
-        self.patience=patience
-        self.min_delta=min_delta
-        self.counter=0
-        self.max_iou=0
-        self.model=None
-
+        self.patience = patience
+        self.min_delta = min_delta
+        self.counter = 0
+        self.max_iou = float("-inf")
 
     def early_stop(self, iou):
-        if iou>self.max_iou:
-            self.max_iou=iou
-            self.counter=0
-            
-        elif iou<(self.max_iou+self.min_delta):
-            self.counter+=1
-            if self.counter>=self.patience:
-                return True
-        return False
+        value = float(iou)
+        if value > self.max_iou + self.min_delta:
+            self.max_iou = value
+            self.counter = 0
+        else:
+            self.counter += 1
+        return self.counter >= self.patience

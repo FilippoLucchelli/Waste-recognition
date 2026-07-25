@@ -1,22 +1,25 @@
-import visdom
-import numpy as np
-import torch
+"""Optional compatibility adapter for historical Visdom plots."""
 
 
 class VisUtils:
-    """ Class to initialize and plot line plots on visdom """
-    def __init__(self, metric_name, vis):
-        self.metric_name=metric_name
-        self.vis=vis
-        self.plot_option=dict(title=metric_name, xlabel='Epoch', ylabel=metric_name, legend=['Validation', 'Training'])
-        self.plot=self.vis.line(X=np.zeros((1,)), Y=np.zeros((1,2)),
-                                opts=self.plot_option)
+    def __init__(self, metric_name, vis) -> None:
+        self.metric_name = metric_name
+        self.vis = vis
+        self.plot = None
 
-    def update_plot(self, epoch, metric_value):
-        self.vis.line(X=torch.ones((1,2))*epoch, Y=torch.Tensor(metric_value).unsqueeze(0),
-                win=self.plot,
-                update='append' if epoch > 0 else None,
-                opts=self.plot_option)
-        
-        
-
+    def update_plot(self, epoch, metrics):
+        values = [
+            float(metric.detach().cpu()) if hasattr(metric, "detach") else float(metric)
+            for metric in metrics
+        ]
+        update = None if self.plot is None else "append"
+        self.plot = self.vis.line(
+            X=[[epoch] * len(values)],
+            Y=[values],
+            win=self.plot,
+            update=update,
+            opts={
+                "title": self.metric_name,
+                "legend": ["validation", "training"],
+            },
+        )

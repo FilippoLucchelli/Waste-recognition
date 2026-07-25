@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "waste-recognition"
+version = "0.2.0"
+description = "Multispectral semantic segmentation training and evaluation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24,<3",
+    "PyYAML>=6,<7",
+    "torch==2.2.1",
+    "torchvision==0.17.1",
+    "segmentation-models-pytorch>=0.3.3,<0.4",
+]
+
+[project.optional-dependencies]
+plotting = ["matplotlib>=3.7,<4"]
+dev = ["ruff>=0.5,<1"]
+
+[project.scripts]
+waste-train = "waste_recognition.cli.train:main"
+waste-evaluate = "waste_recognition.cli.evaluate:main"
+
+[tool.setuptools.packages.find]
+include = ["waste_recognition*", "models*", "options*", "utils*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["models/ACNet.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "LOG"]
+
+[tool.ruff.format]
+exclude = ["models/ACNet.py"]
